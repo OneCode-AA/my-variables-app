@@ -1,103 +1,142 @@
-import Image from "next/image";
+"use client";
+import "./globals.css";
+
+import { useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [variables, setVariables] = useState([]);
+  const [selectedType, setSelectedType] = useState("");
+  const [value, setValue] = useState("");
+  const [copied, setCopied] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const fontList = [
+    "Arial",
+    "Helvetica",
+    "Georgia",
+    "Times New Roman",
+    "Courier New",
+    "Verdana",
+  ];
+
+  const handleTypeChange = (e) => {
+    const type = e.target.value;
+    setSelectedType(type);
+    setValue("");
+  };
+
+  const handleValueChange = (e) => {
+    setValue(e.target.value);
+  };
+
+  const generateVarName = (type) => {
+    const count = variables.filter((v) => v.type === type).length;
+    const names = ["primary", "secondary", "tertiary", "quaternary", "quinary"];
+    return `--${type}-${names[count] || "custom"}`;
+  };
+
+  const handleAdd = () => {
+    if (!selectedType || !value) return;
+    const name = generateVarName(selectedType);
+    const newVar = { name, value, type: selectedType };
+    setVariables([...variables, newVar]);
+    setSelectedType("");
+    setValue("");
+  };
+
+  const handleDelete = (name) => {
+    setVariables(variables.filter((v) => v.name !== name));
+  };
+
+  const handleCopy = () => {
+    const cssVars = variables.map((v) => `  ${v.name}: ${v.value};`);
+    const root = `:root {cssVars}`;
+    navigator.clipboard.writeText(root);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <main className="p-6 max-w-3xl mx-auto bg-stone-100 px-3.5 md:min-h-[95vh] min-h-[95%] min-w-[95%] rounded-2xl border shadow-2xl shadow-rose-800">
+      <h1 className="text-2xl font-bold mb-4">CSS Variable Manager</h1>
+
+      <div className="flex gap-4 mb-4 w-full">
+        <select
+          className="border px-3 py-2 rounded w-40"
+          value={selectedType}
+          onChange={handleTypeChange}
+        >
+          <option value="">Select Type</option>
+          <option value="bg">Background</option>
+          <option value="text">Text</option>
+          <option value="font">Font</option>
+        </select>
+
+        {selectedType && selectedType !== "font" && (
+          <input
+            type="color"
+            className="w-12 h-10 border rounded"
+            value={value}
+            onChange={handleValueChange}
+          />
+        )}
+
+        {selectedType === "font" && (
+          <select
+            className="border px-3 py-2 rounded"
+            value={value}
+            onChange={handleValueChange}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <option value="">Select Font</option>
+            {fontList.map((font) => (
+              <option key={font} value={font}>
+                {font}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+      <div className="mb-2.5">
+        <button
+          className="bg-rose-600 text-white px-4 py-2 rounded"
+          onClick={handleAdd}
+        >
+          Add Variable
+        </button>
+      </div>
+
+      <div className="space-y-2 mb-6">
+        {variables.map((v, idx) => (
+          <div
+            key={idx}
+            className="flex justify-between items-center bg-gray-100 px-4 py-2 rounded"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            <span className="text-sm">
+              {v.name}: <span className="font-mono">{v.value}</span>
+            </span>
+            <button
+              className="text-red-500 hover:text-red-700 text-sm"
+              onClick={() => handleDelete(v.name)}
+            >
+              Delete
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <pre className="mt-4 p-4 bg-gray-800 text-white rounded overflow-auto text-sm">
+        <code>
+          :root {"{"}
+          {variables.map((v) => `\n  ${v.name}: ${v.value};\n`)}
+          {"}"}
+        </code>
+      </pre>
+      <br />
+      <button
+        onClick={handleCopy}
+        className="bg-green-600 text-white px-4 py-2 rounded"
+      >
+        {copied ? "Copied!" : "Copy CSS"}
+      </button>
+    </main>
   );
 }
